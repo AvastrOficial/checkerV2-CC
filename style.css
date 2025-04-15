@@ -1,0 +1,68 @@
+ body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+    }
+
+    textarea, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: none;
+    }
+
+    textarea {
+      background: #1e1e1e;
+      color: #fff;
+      height: 150px;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    .result {
+      background: #1e1e1e;
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 5px solid #4CAF50;
+      white-space: pre-wrap;
+    }
+
+    .die { border-color: red; }
+    .unknown { border-color: orange; }
+
+    .progress-container {
+      width: 100%;
+      background: #333;
+      border-radius: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+      height: 20px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #4CAF50;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .resumen {
+      background: #2a2a2a;
+      padding: 10px;
+      margin-bottom: 15px;
+      border-left: 5px solid #00bcd4;
+    }
+
+    .resumen span {
+      display: inline-block;
+      margin-right: 15px;
+      font-weight: bold;
+    }
