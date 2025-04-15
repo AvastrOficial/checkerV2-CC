@@ -1,4 +1,4 @@
-# checkerV2-CC
+# checkerV2-CC / Validor de tarjetas de credito / BSZ v2
 Este proyecto es un **validador de tarjetas de crédito** desarrollado en HTML, CSS y JavaScript. Utiliza la **API CHKR** para validar tarjetas de crédito de manera rápida y eficiente. El sistema permite pegar una lista de tarjetas de crédito en un área de texto y validar cada una de ellas para determinar si son válidas, no válidas o desconocidas.
 
 ## Descripción
