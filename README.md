@@ -45,3 +45,14 @@ La API tiene un **límite gratuito** de **10 validaciones por hora**. Si se alca
 ## Instalación
 
 Este proyecto está desarrollado completamente en HTML, CSS y JavaScript, por lo que no se necesita ninguna instalación. Simplemente descarga el archivo `index.html` y ábrelo en tu navegador.
+
+## Bot Telegram Requerimientos : 
+```bash
+pip install python-telegram-bot==22.0
+
+python3 -m venv env
+
+source env/bin/activate
+
+pip install aiohttp
+```
