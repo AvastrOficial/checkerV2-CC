@@ -37,15 +37,14 @@ TOKEN = input("Introduce el TOKEN del bot de Telegram: ")
 def generar_tarjeta(bin_base: str, mes: str, ano: str, cvv: str, cantidad: int):
     tarjetas = set()
     while len(tarjetas) < cantidad:
-        # Rellenar la parte de BIN con dígitos donde haya 'x'
         tarjeta_num = ''.join(
-            str(random.randint(0,9)) if c.lower() == 'x' else c
+            str(random.randint(0, 9)) if c.lower() == 'x' else c
             for c in bin_base
         )
         tarjetas.add(f"{tarjeta_num}|{mes}|{ano}|{cvv}")
     return tarjetas
 
-# ————— Comando /start: muestra menú —————
+# ————— Comando /start —————
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("1️⃣ Checker", callback_data="checker")],
@@ -57,19 +56,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-# ————— Callback de los botones del menú —————
+# ————— Callback de menú —————
 async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     choice = query.data
 
     if choice == "checker":
-        # Indicar uso del comando /chk
         await query.edit_message_text("🔍 Envía tus tarjetas con /chk o pega la lista aquí (xxxx|xx|xxxx|xxx).")
         return
 
     if choice == "info":
-        # Mostrar info del bot
         await query.edit_message_text(
             "🤖 BSZCheckerBot\n"
             "• Verifica tarjetas con /chk\n"
@@ -79,82 +76,75 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if choice == "generador":
-        # Entrar a la conversación del generador
         await query.edit_message_text("🧾 Por favor escribe el BIN (usa X para aleatorio), e.g.: 4147202656xxxxxx")
         return BIN
 
-# ————— Conversación: paso 1 → MES —————
-async def ask_mes(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_data_temp[update.effective_user.id] = {"bin": update.message.text}
-    await update.message.reply_text("📅 Ahora escribe el MES (01–12 o 'random'):")
+# ————— Generador paso a paso —————
+async def recibir_bin(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['bin'] = update.message.text.strip()
+    await update.message.reply_text("📅 Escribe el mes (MM), e.g.: 03 o escribe 'random'")
     return MES
 
-# ————— Conversación: paso 2 → AÑO —————
-async def ask_ano(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_data_temp[update.effective_user.id]["mes"] = update.message.text
-    await update.message.reply_text("📆 Escribe el AÑO (e.g.: 2026 o 'random'):")
+async def recibir_mes(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['mes'] = update.message.text.strip()
+    await update.message.reply_text("📆 Escribe el año (YYYY), e.g.: 2026 o escribe 'random'")
     return ANO
 
-# ————— Conversación: paso 3 → CVV —————
-async def ask_cvv(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_data_temp[update.effective_user.id]["ano"] = update.message.text
-    await update.message.reply_text("🔐 CVV (3 dígitos o 'random'):")
+async def recibir_ano(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['ano'] = update.message.text.strip()
+    await update.message.reply_text("🔐 Escribe el CVV (3 dígitos) o escribe 'random'")
     return CVV
 
-# ————— Conversación: paso 4 → CANTIDAD —————
-async def ask_cantidad(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_data_temp[update.effective_user.id]["cvv"] = update.message.text
+async def recibir_cvv(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['cvv'] = update.message.text.strip()
     await update.message.reply_text("🔢 ¿Cuántas tarjetas deseas generar?")
     return CANTIDAD
 
-# ————— Conversación: paso final → Generar y mostrar —————
-async def generar(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    data = user_data_temp.get(uid, {})
-    bin_base = data["bin"]
-    mes     = data["mes"]
-    ano     = data["ano"]
-    cvv     = data["cvv"]
-    cantidad= int(update.message.text)
+async def recibir_cantidad(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        cantidad = int(update.message.text.strip())
+    except ValueError:
+        await update.message.reply_text("❌ Ingresa un número válido.")
+        return CANTIDAD
 
-    # Funciones auxiliares para random
+    bin_input = context.user_data['bin']
+    mes = context.user_data['mes']
+    ano = context.user_data['ano']
+    cvv = context.user_data['cvv']
+
     rnd_mes = lambda: f"{random.randint(1,12):02d}"
     rnd_ano = lambda: str(random.randint(2025,2030))
     rnd_cvv = lambda: f"{random.randint(0,999):03d}"
 
     tarjetas = generar_tarjeta(
-        bin_base,
-        rnd_mes() if mes.lower()=="random" else mes,
-        rnd_ano() if ano.lower()=="random" else ano,
-        rnd_cvv() if cvv.lower()=="random" else cvv,
+        bin_input,
+        rnd_mes() if mes.lower() == "random" else mes,
+        rnd_ano() if ano.lower() == "random" else ano,
+        rnd_cvv() if cvv.lower() == "random" else cvv,
         cantidad
     )
 
-    # Mostrar hasta 40 líneas por mensaje
     lista = list(tarjetas)
     for i in range(0, len(lista), 40):
         chunk = "\n".join(lista[i:i+40])
         await update.message.reply_text(f"🎉 Generadas:\n\n{chunk}")
 
-    user_data_temp.pop(uid, None)
     return ConversationHandler.END
 
-# ————— Conversación: cancelar —————
+# ————— Cancelar conversación —————
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ Generador cancelado.")
     return ConversationHandler.END
 
-# ————— Función auxiliar para mensaje HTML del Checker —————
+# ————— Checker de tarjetas —————
 def generar_mensaje(data: dict, tarjeta: str) -> str:
-    card    = data.get("card", {})
+    card = data.get("card", {})
     country = card.get("country", {})
-    loc     = country.get("location", {})
-    code    = data.get("code", -1)
-    status  = data.get("status", "N/A")
+    loc = country.get("location", {})
+    code = data.get("code", -1)
+    status = data.get("status", "N/A")
 
-    if code == 0:   emoji = "🔴"
-    elif code == 2: emoji = "🟡"
-    else:           emoji = "🟢"
+    emoji = "🟢" if code == 1 else "🟡" if code == 2 else "🔴"
 
     return (
         f"💳 <b>{card.get('card', tarjeta)}</b>\n"
@@ -168,12 +158,10 @@ def generar_mensaje(data: dict, tarjeta: str) -> str:
         "✅ Verificado con BSZChecker"
     )
 
-# ————— Comando /chk → Checker de tarjetas —————
 async def chk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text or ""
     bot_user = (await context.bot.get_me()).username
 
-    # Quitar mención si es grupo
     if update.message.chat.type != "private":
         text = text.replace(f"@{bot_user}", "").strip()
 
@@ -196,17 +184,16 @@ async def chk(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     },
                     data=f"data={tarjeta}&charge=false"
                 ) as res:
-                    resp = await res.text()
-                    data = json.loads(resp)
+                    data = json.loads(await res.text())
             except Exception:
                 unk += 1
                 await update.message.reply_text(f"⚠️ Error con {tarjeta}")
                 continue
 
             code = data.get("code", -1)
-            if code == 0:   die += 1
+            if code == 0: die += 1
             elif code == 2: unk += 1
-            else:           live += 1
+            else: live += 1
 
             await update.message.reply_text(
                 generar_mensaje(data, tarjeta),
@@ -217,14 +204,6 @@ async def chk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     total = live + die + unk
     await update.message.reply_text(
         f"✅ LIVE: {live}\n❌ DIE: {die}\n❓ UNKNOWN: {unk}\n📊 TOTAL: {total}"
-    )
-
-# ————— Comando /info —————
-async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "ℹ️ Este bot verifica tarjetas y genera BINs:\n"
-        "• /chk – valida tarjetas\n"
-        "• Usa el menú /start para más opciones"
     )
 
 def main():
