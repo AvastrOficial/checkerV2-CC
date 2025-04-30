@@ -205,34 +205,31 @@ async def chk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"✅ LIVE: {live}\n❌ DIE: {die}\n❓ UNKNOWN: {unk}\n📊 TOTAL: {total}"
     )
+if __name__ == "__main__":
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    print("✅ Bot iniciado... Esperando comandos.")
 
-def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
-    # Conversación del generador
-    generador_conv = ConversationHandler(
+    # Conversación para Generador
+    generador_handler = ConversationHandler(
         entry_points=[CallbackQueryHandler(menu_callback, pattern="^generador$")],
         states={
-            BIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_mes)],
-            MES: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_ano)],
-            ANO: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_cvv)],
-            CVV: [MessageHandler(filters.TEXT & ~filters.COMMAND, ask_cantidad)],
-            CANTIDAD: [MessageHandler(filters.TEXT & ~filters.COMMAND, generar)],
+            BIN: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_bin)],
+            MES: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_mes)],
+            ANO: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_ano)],
+            CVV: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_cvv)],
+            CANTIDAD: [MessageHandler(filters.TEXT & ~filters.COMMAND, recibir_cantidad)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
-        per_message=True,
     )
 
-    # Handlers básicos
+    # Handlers principales
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("chk", chk))
-    app.add_handler(CommandHandler("info", info))
-    app.add_handler(generador_conv)
-    app.add_handler(CallbackQueryHandler(menu_callback))  # menú para checker/info
+    app.add_handler(generador_handler)
+    app.add_handler(CallbackQueryHandler(menu_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chk))
 
-    print("✅ Bot ejecutándose...")
     app.run_polling()
-
-if __name__ == "__main__":
-    main()
