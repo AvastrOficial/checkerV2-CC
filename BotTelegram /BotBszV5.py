@@ -36,12 +36,21 @@ TOKEN = input("Introduce el TOKEN del bot de Telegram: ")
 # ————— Función de generación de tarjetas —————
 def generar_tarjeta(bin_base: str, mes: str, ano: str, cvv: str, cantidad: int):
     tarjetas = set()
+
+    rnd_mes = lambda: f"{random.randint(1,12):02d}"
+    rnd_ano = lambda: str(random.randint(2025,2030))
+    rnd_cvv = lambda: f"{random.randint(0,999):03d}"
+
     while len(tarjetas) < cantidad:
         tarjeta_num = ''.join(
             str(random.randint(0, 9)) if c.lower() == 'x' else c
             for c in bin_base
         )
-        tarjetas.add(f"{tarjeta_num}|{mes}|{ano}|{cvv}")
+        final_mes = rnd_mes() if mes.lower() == "random" else mes
+        final_ano = rnd_ano() if ano.lower() == "random" else ano
+        final_cvv = rnd_cvv() if cvv.lower() == "random" else cvv
+
+        tarjetas.add(f"{tarjeta_num}|{final_mes}|{final_ano}|{final_cvv}")
     return tarjetas
 
 # ————— Comando /start —————
@@ -112,17 +121,7 @@ async def recibir_cantidad(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ano = context.user_data['ano']
     cvv = context.user_data['cvv']
 
-    rnd_mes = lambda: f"{random.randint(1,12):02d}"
-    rnd_ano = lambda: str(random.randint(2025,2030))
-    rnd_cvv = lambda: f"{random.randint(0,999):03d}"
-
-    tarjetas = generar_tarjeta(
-        bin_input,
-        rnd_mes() if mes.lower() == "random" else mes,
-        rnd_ano() if ano.lower() == "random" else ano,
-        rnd_cvv() if cvv.lower() == "random" else cvv,
-        cantidad
-    )
+    tarjetas = generar_tarjeta(bin_input, mes, ano, cvv, cantidad)
 
     lista = list(tarjetas)
     for i in range(0, len(lista), 40):
@@ -205,6 +204,7 @@ async def chk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"✅ LIVE: {live}\n❌ DIE: {die}\n❓ UNKNOWN: {unk}\n📊 TOTAL: {total}"
     )
+
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)
