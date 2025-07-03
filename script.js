@@ -44,7 +44,7 @@
         const tarjeta = lines[i].trim();
 
         try {
-          const res = await fetch("https://api.chkr.cc/", {
+          const res = await fetch("Api Privada", {
             method: "POST",
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
