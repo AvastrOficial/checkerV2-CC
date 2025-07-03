@@ -26,7 +26,7 @@ Este proyecto utiliza la **API de CHKR** para validar las tarjetas de crédito. 
 
 ### Endpoint de la API
 
-- URL: `https://api.chkr.cc/`
+- URL: `Api Privada`
 - Método: `POST`
 - Parámetros:
   - `data`: La tarjeta de crédito a validar (en formato `card_number|expiration|cvv`).
