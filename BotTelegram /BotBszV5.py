@@ -176,7 +176,7 @@ async def chk(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for tarjeta in lines:
             try:
                 async with session.post(
-                    "https://api.chkr.cc/",
+                    "API PRIVADA",
                     headers={
                         "Content-Type": "application/x-www-form-urlencoded",
                         "User-Agent": "Mozilla/5.0"
